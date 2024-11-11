@@ -5,13 +5,24 @@ import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class UserMainPageActivity extends AppCompatActivity {
 
     private TextView greetingTextView;
     private TextView faqsTextView;
+    private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,16 +30,34 @@ public class UserMainPageActivity extends AppCompatActivity {
         setContentView(R.layout.usermainpage);
 
         greetingTextView = findViewById(R.id.appointmentHistpry);
+        faqsTextView = findViewById(R.id.faqs);
 
-        String firstName = getIntent().getStringExtra("firstName");
-        if (firstName != null && !firstName.isEmpty()) {
-            greetingTextView.setText("Hello, " + firstName + "!");
-            Toast.makeText(UserMainPageActivity.this, "Hello, " + firstName + "!", Toast.LENGTH_SHORT).show();
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference("Users");
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            mDatabase.child(userId).child("firstName").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String firstName = snapshot.getValue(String.class);
+                    if (firstName != null && !firstName.isEmpty()) {
+                        greetingTextView.setText("Hello, " + firstName + "!");
+                        Toast.makeText(UserMainPageActivity.this, "Hello, " + firstName + "!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        greetingTextView.setText("Hello, User!");
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(UserMainPageActivity.this, "Failed to load user data.", Toast.LENGTH_SHORT).show();
+                }
+            });
         } else {
             greetingTextView.setText("Hello, User!");
         }
-
-        faqsTextView = findViewById(R.id.faqs);
 
         String faqText = "<b>1. What is the Salonpas Hair Salon app?</b><br/>" +
                 "The Salonpas app is a salon appointment scheduling platform that allows clients to register, book appointments, view services and stylists, and manage their salon experience. It's available for both Android and iOS devices.<br/><br/>" +
@@ -61,20 +90,18 @@ public class UserMainPageActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void openReservationPage (View view) {
+    public void openReservationPage(View view) {
         Intent intent = new Intent(UserMainPageActivity.this, AppointmentReservationActivity.class);
         startActivity(intent);
     }
 
-    public void openNotificationPage (View view) {
+    public void openNotificationPage(View view) {
         Intent intent = new Intent(UserMainPageActivity.this, AppointmentNotificationActivity.class);
         startActivity(intent);
     }
 
-    public void openProfilePage (View view) {
+    public void openProfilePage(View view) {
         Intent intent = new Intent(UserMainPageActivity.this, ProfileActivity.class);
         startActivity(intent);
     }
-
 }
-

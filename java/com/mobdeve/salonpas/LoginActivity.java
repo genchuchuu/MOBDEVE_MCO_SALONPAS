@@ -2,20 +2,20 @@ package com.mobdeve.salonpas;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputType;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText emailInput, passwordInput;
     private Button loginButton;
-    private TextView togglePasswordVisibility;
-    private boolean isPasswordVisible = false;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +25,8 @@ public class LoginActivity extends AppCompatActivity {
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
         loginButton = findViewById(R.id.loginPageButton);
-        togglePasswordVisibility = findViewById(R.id.togglePasswordVisibility);
+
+        mAuth = FirebaseAuth.getInstance();
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -33,40 +34,26 @@ public class LoginActivity extends AppCompatActivity {
                 String email = emailInput.getText().toString();
                 String password = passwordInput.getText().toString();
 
-                if (email.equals("admin1@salonpas.store.com") && password.equals("Admin_123")) {
-                    navigateToAdminPage();
-                } else if (email.equals("preciouspaulanicole@gmail.com") && password.equals("pr3c10us")) {
-                    navigateToMainPage("Precious");
-                } else if (email.equals("maxxieanderson123@gmail.com") && password.equals("MaxxieWinner3")) {
-                    navigateToMainPage("Maxxie");
-                } else if (email.equals("CaptivatingKatKat@gmail.com") && password.equals("CaptivateK4t")) {
-                    navigateToMainPage("KatKat");
+                if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
+                    Toast.makeText(LoginActivity.this, "Enter both email and password", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(LoginActivity.this, "Incorrect email or password!", Toast.LENGTH_SHORT).show();
+                    mAuth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    FirebaseUser user = mAuth.getCurrentUser();
+                                    navigateToMainPage(user.getDisplayName());
+                                } else {
+                                    Toast.makeText(LoginActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                 }
-            }
-        });
-
-        togglePasswordVisibility.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isPasswordVisible) {
-                    passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    togglePasswordVisibility.setText("Show");
-                    isPasswordVisible = false;
-                } else {
-                    passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    togglePasswordVisibility.setText("Hide");
-                    isPasswordVisible = true;
-                }
-                passwordInput.setSelection(passwordInput.getText().length());
             }
         });
     }
 
-    private void navigateToMainPage(String firstName) {
+    private void navigateToMainPage(String userName) {
         Intent intent = new Intent(LoginActivity.this, UserMainPageActivity.class);
-        intent.putExtra("firstName", firstName);
+        intent.putExtra("userName", userName);
         startActivity(intent);
         finish();
     }

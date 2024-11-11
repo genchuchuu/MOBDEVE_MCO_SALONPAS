@@ -1,5 +1,6 @@
 package com.mobdeve.salonpas;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -7,75 +8,103 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.Calendar;
 
 public class RegistrationActivity extends AppCompatActivity {
 
-    private EditText fullNameInput, emailInput, passwordInput, birthdateInput;
+    private EditText firstNameInput, lastNameInput, emailInput, passwordInput, birthdateInput;
     private Button registerButton;
-    private TextView alreadyHaveAccount, togglePasswordVisibility;
-    private boolean isPasswordVisible = false;
+    private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.registration);
 
-        fullNameInput = findViewById(R.id.fullNameInput);
+        firstNameInput = findViewById(R.id.firstNameInput);
+        lastNameInput = findViewById(R.id.lastNameInput);
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
         birthdateInput = findViewById(R.id.birthdateInput);
         registerButton = findViewById(R.id.registerButton);
-        alreadyHaveAccount = findViewById(R.id.alreadyHaveAccount);
-        togglePasswordVisibility = findViewById(R.id.togglePasswordVisibility);
 
-        alreadyHaveAccount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(RegistrationActivity.this, LoginActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference("Users");
 
-        registerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (validateInputs()) {
-                    String fullName = fullNameInput.getText().toString();
-                    String firstName = fullName.split(" ")[0];
+        birthdateInput.setOnClickListener(v -> showDatePickerDialog());
 
-                    Toast.makeText(RegistrationActivity.this, "Registered Successfully!", Toast.LENGTH_SHORT).show();
+        registerButton.setOnClickListener(view -> {
+            if (validateInputs()) {
+                registerButton.setEnabled(false);  // Disable button to prevent double-clicks
+                String email = emailInput.getText().toString();
+                String password = passwordInput.getText().toString();
+                String firstName = firstNameInput.getText().toString();
+                String lastName = lastNameInput.getText().toString();
+                String birthdate = birthdateInput.getText().toString();
 
-                    Intent intent = new Intent(RegistrationActivity.this, UserMainPageActivity.class);
-                    intent.putExtra("firstName", firstName);
-                    startActivity(intent);
-                    finish();
-                }
-            }
-        });
+                mAuth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(authTask -> {
+                            if (authTask.isSuccessful()) {
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                User userInfo = new User(firstName, lastName, email, birthdate);
 
-        togglePasswordVisibility.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isPasswordVisible) {
-                    passwordInput.setInputType(129);
-                    isPasswordVisible = false;
-                } else {
-                    passwordInput.setInputType(1);
-                    isPasswordVisible = true;
-                }
-                passwordInput.setSelection(passwordInput.getText().length());
+                                mDatabase.child(user.getUid()).setValue(userInfo)
+                                        .addOnCompleteListener(dbTask -> {
+                                            if (dbTask.isSuccessful()) {
+                                                Toast.makeText(RegistrationActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
+                                                startActivity(new Intent(RegistrationActivity.this, UserMainPageActivity.class));
+                                                finish();
+                                            } else {
+                                                Toast.makeText(RegistrationActivity.this, "Database error: " + dbTask.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                            registerButton.setEnabled(true);  // Re-enable button
+                                        });
+                            } else {
+                                String errorMessage = authTask.getException() != null ? authTask.getException().getMessage() : "Unknown error";
+                                Toast.makeText(RegistrationActivity.this, "Authentication failed: " + errorMessage, Toast.LENGTH_LONG).show();
+                                registerButton.setEnabled(true);  // Re-enable button
+                            }
+                        });
             }
         });
     }
 
+    private void showDatePickerDialog() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    String birthdate = (selectedMonth + 1) + "/" + selectedDay + "/" + selectedYear;
+                    birthdateInput.setText(birthdate);
+                },
+                year, month, day);
+
+        datePickerDialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+        datePickerDialog.show();
+    }
+
     private boolean validateInputs() {
-        if (TextUtils.isEmpty(fullNameInput.getText().toString())) {
-            fullNameInput.setError("Full Name is required!");
-            fullNameInput.requestFocus();
+        if (TextUtils.isEmpty(firstNameInput.getText().toString())) {
+            firstNameInput.setError("First Name is required!");
+            firstNameInput.requestFocus();
+            return false;
+        }
+
+        if (TextUtils.isEmpty(lastNameInput.getText().toString())) {
+            lastNameInput.setError("Last Name is required!");
+            lastNameInput.requestFocus();
             return false;
         }
 
@@ -108,10 +137,6 @@ public class RegistrationActivity extends AppCompatActivity {
         String birthdate = birthdateInput.getText().toString();
         if (TextUtils.isEmpty(birthdate)) {
             birthdateInput.setError("Birthdate is required!");
-            birthdateInput.requestFocus();
-            return false;
-        } else if (!birthdate.matches("(0[1-9]|1[0-2])/([0-2][0-9]|3[01])/(19|20)\\d{2}")) {
-            birthdateInput.setError("Birthdate must be in MM/DD/YYYY format");
             birthdateInput.requestFocus();
             return false;
         }
