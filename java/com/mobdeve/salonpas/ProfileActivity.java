@@ -2,22 +2,58 @@ package com.mobdeve.salonpas;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class ProfileActivity extends AppCompatActivity {
+
     private ImageView profileImage;
     private TextView valueName, valueBirthday, valueGender, valueContact, valueEmail;
     private Button editProfileButton, logoutButton;
+    private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        // Initialize Firebase
+        mAuth = FirebaseAuth.getInstance();
+        String currentUserId = mAuth.getCurrentUser().getUid();
+        mDatabase = FirebaseDatabase.getInstance().getReference("Users").child(currentUserId);
+
+        // Initialize UI components
+        initializeUI();
+        loadUserData();
+
+        // Set up button actions
+        editProfileButton.setOnClickListener(v -> {
+            Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
+            startActivity(intent);
+        });
+
+        logoutButton.setOnClickListener(v -> {
+            mAuth.signOut();
+            Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
+    }
+
+    private void initializeUI() {
         profileImage = findViewById(R.id.profileImage);
         valueName = findViewById(R.id.valueName);
         valueBirthday = findViewById(R.id.valueBirthday);
@@ -26,42 +62,42 @@ public class ProfileActivity extends AppCompatActivity {
         valueEmail = findViewById(R.id.valueEmail);
         editProfileButton = findViewById(R.id.editProfileButton);
         logoutButton = findViewById(R.id.logoutButton);
-
-        loadUserData();
-
-        editProfileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        logoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-            }
-        });
     }
 
     private void loadUserData() {
-        String name = "Kang Seulgi";
-        String birthday = "01/01/1991";
-        String gender = "Female";
-        String contact = "1234567890";
-        String email = "k.seulgi@gmail.com";
+        mDatabase.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                DataSnapshot snapshot = task.getResult();
+                User user = snapshot.getValue(User.class);
+                if (user != null) {
+                    // Populate fields
+                    valueName.setText(user.getFirstName() + " " + user.getLastName());
+                    valueBirthday.setText(user.getBirthdate() != null ? user.getBirthdate() : "Not provided");
+                    valueGender.setText(user.getGender() != null ? user.getGender() : "Not provided");
+                    valueContact.setText(user.getContact() != null ? user.getContact() : "Not provided");
+                    valueEmail.setText(user.getEmail());
 
-        valueName.setText(name);
-        valueBirthday.setText(birthday);
-        valueGender.setText(gender);
-        valueContact.setText(contact);
-        valueEmail.setText(email);
+                    // Handle profile picture
+                    if (user.getProfilePictureUrl() != null && !user.getProfilePictureUrl().isEmpty()) {
+                        Glide.with(this)
+                                .load(user.getProfilePictureUrl())
+                                .placeholder(R.drawable.ic_default_profile) // Default image
+                                .error(R.drawable.ic_error_image) // Error image
+                                .into(profileImage);
+                    } else {
+                        profileImage.setImageResource(R.drawable.ic_default_profile);
+                    }
+                } else {
+                    Toast.makeText(this, "User data is null.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Failed to fetch data: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
+
+    // Navigation methods for other activities
     public void openAppointmentHistory(View view) {
         Intent intent = new Intent(ProfileActivity.this, AppointmentHistory.class);
         startActivity(intent);

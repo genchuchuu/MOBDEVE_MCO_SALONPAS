@@ -2,7 +2,8 @@
   "project_info": {
     "project_number": "575164706711",
     "project_id": "mobdevemco-95b78",
-    "storage_bucket": "mobdevemco-95b78.firebasestorage.app"
+    "storage_bucket": "mobdevemco-95b78.firebasestorage.app",
+    "firebase_url": "https://mobdevemco-95b78-default-rtdb.asia-southeast1.firebasedatabase.app/"
   },
   "client": [
     {

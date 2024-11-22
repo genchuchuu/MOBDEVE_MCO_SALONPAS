@@ -7,6 +7,10 @@ import android.widget.TextView;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+
 import java.util.List;
 
 public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder> {
@@ -33,8 +37,6 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
     public void onBindViewHolder(@NonNull ServiceViewHolder holder, int position) {
         Service service = serviceList.get(position);
         holder.bind(service);
-
-
         holder.itemView.setOnClickListener(v -> serviceClickListener.onServiceClick(service));
     }
 
@@ -44,10 +46,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
     }
 
     class ServiceViewHolder extends RecyclerView.ViewHolder {
-        private final TextView serviceName;
-        private final TextView serviceDescription;
-        private final TextView serviceDuration;
-        private final TextView servicePrice;
+        private final TextView serviceName, serviceDescription, serviceDuration, servicePrice;
         private final ImageView serviceImage;
 
         public ServiceViewHolder(@NonNull View itemView) {
@@ -57,12 +56,6 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
             serviceDuration = itemView.findViewById(R.id.serviceDuration);
             servicePrice = itemView.findViewById(R.id.servicePrice);
             serviceImage = itemView.findViewById(R.id.serviceImg);
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    serviceClickListener.onServiceClick(serviceList.get(getAdapterPosition()));
-                }
-            });
         }
 
         public void bind(Service service) {
@@ -70,8 +63,16 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
             serviceDescription.setText(service.getDescription());
             serviceDuration.setText(service.getDuration());
             servicePrice.setText(service.getPrice());
-            serviceImage.setImageResource(service.getImage());
-        }
 
+            // Load image from URL using Glide
+            if (service.getImageUrl() != null && !service.getImageUrl().isEmpty()) {
+                Glide.with(serviceImage.getContext())
+                        .load(service.getImageUrl())
+                        .apply(new RequestOptions().placeholder(R.drawable.placeholder)) // Placeholder image
+                        .into(serviceImage);
+            } else {
+                serviceImage.setImageResource(R.drawable.placeholder); // Default placeholder
+            }
+        }
     }
 }

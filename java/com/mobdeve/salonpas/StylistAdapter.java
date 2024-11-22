@@ -3,19 +3,24 @@ package com.mobdeve.salonpas;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 public class StylistAdapter extends RecyclerView.Adapter<StylistAdapter.StylistViewHolder> {
 
-    private List<String> stylistList;
+    private List<Stylist> stylistList;
+    private OnStylistClickListener listener;
 
-    public StylistAdapter(List<String> stylistList) {
+    public StylistAdapter(List<Stylist> stylistList, OnStylistClickListener listener) {
         this.stylistList = stylistList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -27,8 +32,15 @@ public class StylistAdapter extends RecyclerView.Adapter<StylistAdapter.StylistV
 
     @Override
     public void onBindViewHolder(@NonNull StylistViewHolder holder, int position) {
-        String stylistName = stylistList.get(position);
-        holder.stylistNameTextView.setText(stylistName);
+        Stylist stylist = stylistList.get(position);
+        holder.stylistName.setText(stylist.getName());
+        holder.stylistServices.setText(stylist.getServices());
+        Glide.with(holder.itemView.getContext())
+                .load(stylist.getPhoto())
+                .placeholder(R.drawable.placeholder) // Placeholder image
+                .into(holder.stylistPhoto);
+
+        holder.itemView.setOnClickListener(v -> listener.onStylistClick(stylist));
     }
 
     @Override
@@ -37,11 +49,18 @@ public class StylistAdapter extends RecyclerView.Adapter<StylistAdapter.StylistV
     }
 
     static class StylistViewHolder extends RecyclerView.ViewHolder {
-        TextView stylistNameTextView;
+        TextView stylistName, stylistServices;
+        ImageView stylistPhoto;
 
         public StylistViewHolder(@NonNull View itemView) {
             super(itemView);
-            stylistNameTextView = itemView.findViewById(R.id.stylistName);
+            stylistName = itemView.findViewById(R.id.stylistName);
+            stylistServices = itemView.findViewById(R.id.stylistServices);
+            stylistPhoto = itemView.findViewById(R.id.stylistPhoto);
         }
+    }
+
+    public interface OnStylistClickListener {
+        void onStylistClick(Stylist stylist);
     }
 }

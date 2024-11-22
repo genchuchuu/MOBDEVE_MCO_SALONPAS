@@ -2,11 +2,19 @@ package com.mobdeve.salonpas;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 import android.view.View;
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,28 +31,41 @@ public class ServiceList extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.ServiceListRecView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
-        loadServiceList();
-
+        serviceList = new ArrayList<>();
         adapter = new ServiceAdapter(serviceList, service -> {
             Intent intent = new Intent(this, ViewService.class);
             intent.putExtra("name", service.getName());
             intent.putExtra("desc", service.getDescription());
             intent.putExtra("duration", service.getDuration());
             intent.putExtra("price", service.getPrice());
-            intent.putExtra("image", service.getImage());
+            intent.putExtra("imageUrl", service.getImageUrl());
             startActivity(intent);
         });
         recyclerView.setAdapter(adapter);
+
+        loadServiceList();
     }
 
     private void loadServiceList() {
-        serviceList = new ArrayList<>();
-        serviceList.add(new Service("Hair Cut", "Basic haircut", "30 mins", "$15", R.drawable.haircut));
-        serviceList.add(new Service("Hair Color", "Hair coloring", "2 hours", "$60", R.drawable.haircolor));
-        serviceList.add(new Service("Hair Style", "Hair styling", "45 mins", "$25", R.drawable.hairstyle));
-        serviceList.add(new Service("Hair Treatment", "Hair treatment", "1 hour", "$50", R.drawable.hairtreatment));
+        DatabaseReference servicesRef = FirebaseDatabase.getInstance().getReference("Services");
+        servicesRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                serviceList.clear();
+                for (DataSnapshot serviceSnapshot : snapshot.getChildren()) {
+                    Service service = serviceSnapshot.getValue(Service.class);
+                    if (service != null) {
+                        serviceList.add(service);
+                    }
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ServiceList.this, "Failed to load services: " + error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public void openUserMainPage(View view) {
@@ -76,6 +97,5 @@ public class ServiceList extends AppCompatActivity {
         Intent intent = new Intent(ServiceList.this, ProfileActivity.class);
         startActivity(intent);
     }
-
 }
 

@@ -7,6 +7,8 @@ public class Stylist {
     private double rating;
     private String services;
 
+    public Stylist() {}
+
     public Stylist(String name, String photo, int years, double rating, String services) {
         this.name = name;
         this.photo = photo;
@@ -15,10 +17,19 @@ public class Stylist {
         this.services = services;
     }
 
+    // Getters and setters
     public String getName() { return name; }
-    public String getPhoto() { return photo; }
-    public int getYearsOfExperience() { return yearsOfExperience; }
-    public double getRating() { return rating; }
-    public String getServices() { return services; }
+    public void setName(String name) { this.name = name; }
 
+    public String getPhoto() { return photo; }
+    public void setPhoto(String photo) { this.photo = photo; }
+
+    public int getYearsOfExperience() { return yearsOfExperience; }
+    public void setYearsOfExperience(int years) { this.yearsOfExperience = years; }
+
+    public double getRating() { return rating; }
+    public void setRating(double rating) { this.rating = rating; }
+
+    public String getServices() { return services; }
+    public void setServices(String services) { this.services = services; }
 }
