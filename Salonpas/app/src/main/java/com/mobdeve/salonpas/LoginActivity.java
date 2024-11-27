@@ -2,20 +2,25 @@ package com.mobdeve.salonpas;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputType;
-import android.view.View;
+import android.text.TextUtils;
+import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 public class LoginActivity extends AppCompatActivity {
 
     private EditText emailInput, passwordInput;
     private Button loginButton;
-    private TextView togglePasswordVisibility;
-    private boolean isPasswordVisible = false;
+    private TextView createAccountLink;
+    private FirebaseAuth mAuth;
+
+    private final String ADMIN_EMAIL = "admin1@salonpas.store.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,47 +30,46 @@ public class LoginActivity extends AppCompatActivity {
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
         loginButton = findViewById(R.id.loginPageButton);
-        togglePasswordVisibility = findViewById(R.id.togglePasswordVisibility);
+        createAccountLink = findViewById(R.id.createAccount);
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String email = emailInput.getText().toString();
-                String password = passwordInput.getText().toString();
+        mAuth = FirebaseAuth.getInstance();
 
-                if (email.equals("preciouspaulanicole@gmail.com") && password.equals("pr3c10us")) {
-                    navigateToMainPage("Precious");
-                } else if (email.equals("maxxieanderson123@gmail.com") && password.equals("MaxxieWinner3")) {
-                    navigateToMainPage("Maxxie");
-                } else if (email.equals("CaptivatingKatKat@gmail.com") && password.equals("CaptivateK4t")) {
-                    navigateToMainPage("KatKat");
-                } else {
-                    Toast.makeText(LoginActivity.this, "Incorrect email or password!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+        createAccountLink.setOnClickListener(view -> startActivity(new Intent(this, RegistrationActivity.class)));
 
-        togglePasswordVisibility.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isPasswordVisible) {
-                    passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    togglePasswordVisibility.setText("Show");
-                    isPasswordVisible = false;
-                } else {
-                    passwordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    togglePasswordVisibility.setText("Hide");
-                    isPasswordVisible = true;
-                }
-                passwordInput.setSelection(passwordInput.getText().length());
+        loginButton.setOnClickListener(view -> {
+            String email = emailInput.getText().toString().trim();
+            String password = passwordInput.getText().toString().trim();
+
+            if (validateInputs(email, password)) {
+                loginUser(email, password);
             }
         });
     }
 
-    private void navigateToMainPage(String firstName) {
-        Intent intent = new Intent(LoginActivity.this, UserMainPageActivity.class);
-        intent.putExtra("firstName", firstName);
-        startActivity(intent);
-        finish();
+    private void loginUser(String email, String password) {
+        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (email.equalsIgnoreCase(ADMIN_EMAIL)) {
+                    startActivity(new Intent(this, AdminMainPageActivity.class));
+                } else {
+                    startActivity(new Intent(this, UserMainPageActivity.class));
+                }
+                finish();
+            } else {
+                Toast.makeText(this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private boolean validateInputs(String email, String password) {
+        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailInput.setError("Enter a valid email!");
+            return false;
+        }
+        if (TextUtils.isEmpty(password)) {
+            passwordInput.setError("Password is required!");
+            return false;
+        }
+        return true;
     }
 }
