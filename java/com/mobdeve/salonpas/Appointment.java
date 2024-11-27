@@ -1,28 +1,31 @@
 package com.mobdeve.salonpas;
 
 public class Appointment {
-    private String date;
-    private String services;
-    private String stylist;
-    private int id;
+    private String dateTime;
+    private String serviceName;
+    private String stylistName;
+    private String userId;
 
-    public Appointment(String date, String services, String stylist) {
-        this.date = date;
-        this.services = services;
-        this.stylist = stylist;
+    public Appointment(String dateTime, String serviceName, String stylistName, String userId) {
+        this.dateTime = dateTime;
+        this.serviceName = serviceName;
+        this.stylistName = stylistName;
+        this.userId = userId;
     }
 
-    public String getDate() {
-        return date;
+    public String getDateTime() {
+        return dateTime;
     }
 
-    public String getServices() {
-        return services;
+    public String getServiceName() {
+        return serviceName;
     }
 
-    public String getStylist() {
-        return stylist;
+    public String getStylistName() {
+        return stylistName;
     }
 
-    public int getId() {return id;}
+    public String getUserId() {
+        return userId;
+    }
 }

@@ -47,15 +47,6 @@
                 android:textColor="@color/mainFont"
                 android:textSize="16sp"
                 android:textStyle="bold" />
-
-            <EditText
-                android:id="@+id/cancelReason"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:elevation="2dp"
-                android:hint="Reason for Cancellation"
-                android:padding="12dp"
-                android:textColor="@color/black" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -63,22 +54,13 @@
         android:id="@+id/btnCancelAppointment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="106dp"
         android:layout_marginTop="48dp"
-        android:layout_marginEnd="107dp"
-        android:layout_marginBottom="378dp"
         android:backgroundTint="@color/accentTertiary"
-        android:onClick="confirmCancellation"
-        android:paddingStart="32dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="32dp"
-        android:paddingBottom="12dp"
         android:text="Confirm Cancellation"
         android:textColor="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardView" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
         android:id="@+id/bottom_navigation"

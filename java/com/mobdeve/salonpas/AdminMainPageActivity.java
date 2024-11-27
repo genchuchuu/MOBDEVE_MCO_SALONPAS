@@ -22,7 +22,7 @@ public class AdminMainPageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.adminmainpage);
 
-        greetingTextView = findViewById(R.id.appointmentHistory);
+        greetingTextView = findViewById(R.id.greeting);
 
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -30,7 +30,6 @@ public class AdminMainPageActivity extends AppCompatActivity {
         if (currentUser != null) {
             validateAdminAccess(currentUser.getEmail());
         } else {
-            // Redirect to login if user is not authenticated
             redirectToLogin("Unauthorized access. Please log in.");
         }
     }

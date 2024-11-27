@@ -22,45 +22,15 @@
             android:padding="24dp">
 
             <TextView
-                android:id="@+id/appointmentHistory"
+                android:id="@+id/greeting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="40dp"
                 android:text="Hi, Admin"
                 android:textColor="@color/mainFont"
                 android:textSize="40sp"
-                android:textStyle="bold"
-                android:layout_marginTop="40dp" />
-
-            <LinearLayout
-                android:id="@+id/searchContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:background="@drawable/edittext_rounded"
-                android:padding="8dp"
-                android:layout_marginTop="16dp">
-
-                <EditText
-                    android:id="@+id/searchBar"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Search here"
-                    android:background="@android:color/transparent"
-                    android:padding="16dp"
-                    android:textColorHint="@color/accentTertiary"
-                    android:textSize="24sp" />
-
-                <ImageView
-                    android:id="@+id/searchIcon"
-                    android:layout_width="34dp"
-                    android:layout_height="43dp"
-                    android:contentDescription="Search Icon"
-                    android:src="@drawable/search"
-                    android:layout_gravity="center"
-                    app:tint="@color/accentTertiary" />
-
-            </LinearLayout>
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:id="@+id/mainContentSection"

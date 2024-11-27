@@ -10,20 +10,82 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="-16dp">
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="0dp">
 
         <Button
             android:id="@+id/submitStylist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="156dp"
+            android:layout_marginBottom="80dp"
             android:backgroundTint="#020887"
             android:text="Add Stylist"
             android:textColor="@color/white"
             app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/photo1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="68dp"
+            android:layout_marginTop="36dp"
+            android:text="Photo"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/stylistName" />
+
+        <EditText
+            android:id="@+id/photoField"
+            android:layout_width="192dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:ems="10"
+            android:inputType="text"
+            android:text="URL"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.904"
+            app:layout_constraintStart_toEndOf="@+id/experience"
+            app:layout_constraintTop_toBottomOf="@+id/stylistNameField" />
+
+        <TextView
+            android:id="@+id/experience"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="68dp"
+            android:layout_marginTop="44dp"
+            android:text="Years of Experience:"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/photo1" />
+
+        <EditText
+            android:id="@+id/experienceField"
+            android:layout_width="192dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:ems="10"
+            android:inputType="text"
+            android:text="Years"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.809"
+            app:layout_constraintStart_toEndOf="@+id/experience"
+            app:layout_constraintTop_toBottomOf="@+id/photoField" />
+
+        <EditText
+            android:id="@+id/servicesField"
+            android:layout_width="158dp"
+            android:layout_height="56dp"
+            android:ems="10"
+            android:inputType="text"
+            android:text="Services"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.05"
+            app:layout_constraintStart_toEndOf="@+id/services"
+            app:layout_constraintTop_toBottomOf="@+id/experienceField"
+            app:layout_constraintVertical_bias="0.064" />
 
         <TextView
             android:id="@+id/services"
@@ -33,10 +95,10 @@
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.299"
+            app:layout_constraintHorizontal_bias="0.348"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/experience"
-            app:layout_constraintVertical_bias="0.136" />
+            app:layout_constraintVertical_bias="0.217" />
 
         <ImageView
             android:id="@+id/stylistImage"
@@ -63,17 +125,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/stylistImage" />
 
-
-        <TextView
-            android:id="@+id/experience"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="68dp"
-            android:layout_marginTop="32dp"
-            android:text="Years of Experience:"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/stylistName" />
 
         <LinearLayout
             android:id="@+id/bottom_navigation"
@@ -238,33 +289,6 @@
             app:layout_constraintHorizontal_bias="0.431"
             app:layout_constraintStart_toEndOf="@+id/stylistName"
             app:layout_constraintTop_toBottomOf="@+id/stylistImage" />
-
-        <EditText
-            android:id="@+id/servicesField"
-            android:layout_width="158dp"
-            android:layout_height="56dp"
-            android:ems="10"
-            android:inputType="text"
-            android:text="Services"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.309"
-            app:layout_constraintStart_toEndOf="@+id/services"
-            app:layout_constraintTop_toBottomOf="@+id/experienceField"
-            app:layout_constraintVertical_bias="0.044" />
-
-        <EditText
-            android:id="@+id/experienceField"
-            android:layout_width="192dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="8dp"
-            android:ems="10"
-            android:inputType="text"
-            android:text="Years"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.791"
-            app:layout_constraintStart_toEndOf="@+id/experience"
-            app:layout_constraintTop_toBottomOf="@+id/stylistNameField" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

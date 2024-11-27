@@ -1,30 +1,34 @@
 package com.mobdeve.salonpas;
 
 import android.content.Intent;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.AppointmentViewHolder> {
 
     private List<Appointment> appointmentList;
-    private OnAppointmentClickListener onAppointmentClickListener;
+    private List<String> appointmentIdList;
+    private OnReviewClickListener onReviewClickListener;
 
-    public interface OnAppointmentClickListener {
-        void onAppointmentClick(Appointment appointment);
+    public interface OnReviewClickListener {
+        void onReviewClick(String appointmentId, String serviceName, String stylistName);
     }
 
-    public AppointmentAdapter(List<Appointment> appointmentList, OnAppointmentClickListener listener) {
+    public AppointmentAdapter(List<Appointment> appointmentList, List<String> appointmentIdList, OnReviewClickListener onReviewClickListener) {
         this.appointmentList = appointmentList;
-        this.onAppointmentClickListener = listener;
+        this.appointmentIdList = appointmentIdList;
+        this.onReviewClickListener = onReviewClickListener;
     }
+
 
     @NonNull
     @Override
@@ -36,26 +40,30 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     @Override
     public void onBindViewHolder(@NonNull AppointmentViewHolder holder, int position) {
         Appointment appointment = appointmentList.get(position);
-        holder.appointmentDate.setText(appointment.getDate());
-        holder.serviceDescription.setText(appointment.getServices());
+        String appointmentId = appointmentIdList.get(position);
 
-        holder.itemView.setOnClickListener(v -> onAppointmentClickListener.onAppointmentClick(appointment));
+        holder.appointmentDate.setText(appointment.getDateTime());
+        holder.serviceDescription.setText(appointment.getServiceName());
+        holder.stylistName.setText(appointment.getStylistName());
 
-        holder.editButton.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), UserEditAppointmentActivity.class);
-            intent.putExtra("appointment_date", appointment.getDate());
-            intent.putExtra("appointment_services", appointment.getServices());
-            intent.putExtra("appointment_stylist", appointment.getStylist());
-            v.getContext().startActivity(intent);
-        });
+        // Review Button logic (only for user workflows)
+        if (onReviewClickListener != null && !isUpcoming(appointment.getDateTime())) {
+            holder.reviewButton.setVisibility(View.VISIBLE);
+            holder.reviewButton.setOnClickListener(v -> {
+                onReviewClickListener.onReviewClick(appointmentId, appointment.getServiceName(), appointment.getStylistName());
+            });
 
-        holder.cancelButton.setOnClickListener(v -> {
-            Intent intent = new Intent(v.getContext(), UserCancelAppointmentActivity.class);
-            intent.putExtra("appointment_date", appointment.getDate());
-            intent.putExtra("appointment_services", appointment.getServices());
-            intent.putExtra("appointment_stylist", appointment.getStylist());
-            v.getContext().startActivity(intent);
-        });
+        } else {
+            holder.reviewButton.setVisibility(View.GONE);
+        }
+    }
+
+    private boolean isUpcoming(String appointmentDateTime) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            LocalDate date = LocalDate.parse(appointmentDateTime.split(" at ")[0]); // Extract date
+            return date.isAfter(LocalDate.now());
+        }
+        return false;
     }
 
     @Override
@@ -66,15 +74,15 @@ public class AppointmentAdapter extends RecyclerView.Adapter<AppointmentAdapter.
     static class AppointmentViewHolder extends RecyclerView.ViewHolder {
         TextView appointmentDate;
         TextView serviceDescription;
-        Button editButton;
-        Button cancelButton;
+        TextView stylistName;
+        Button reviewButton;
 
         public AppointmentViewHolder(@NonNull View itemView) {
             super(itemView);
             appointmentDate = itemView.findViewById(R.id.appointmentDate);
             serviceDescription = itemView.findViewById(R.id.serviceDescription);
-            editButton = itemView.findViewById(R.id.editButton);
-            cancelButton = itemView.findViewById(R.id.cancelButton);
+            stylistName = itemView.findViewById(R.id.stylistName);
+            reviewButton = itemView.findViewById(R.id.reviewButton); // Ensure this exists in XML
         }
     }
 }

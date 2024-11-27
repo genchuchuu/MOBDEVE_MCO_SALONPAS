@@ -35,7 +35,6 @@ public class AdminProfile extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_profile);
 
-        // Initialize UI components
         profileImage = findViewById(R.id.profileImage);
         valueContact = findViewById(R.id.valueContact);
         valueEmail = findViewById(R.id.valueEmail);
@@ -62,7 +61,6 @@ public class AdminProfile extends AppCompatActivity {
     }
 
     private void loadAdminData() {
-        // Query the database for the admin user using the predefined admin email
         mDatabase.orderByChild("email").equalTo(ADMIN_EMAIL).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -70,16 +68,14 @@ public class AdminProfile extends AppCompatActivity {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         User adminUser = snapshot.getValue(User.class);
                         if (adminUser != null) {
-                            // Update UI with admin data
                             valueEmail.setText(adminUser.getEmail());
                             valueContact.setText(adminUser.getContact());
 
-                            // Load profile picture using Glide
                             if (adminUser.getProfilePictureUrl() != null && !adminUser.getProfilePictureUrl().isEmpty()) {
                                 Glide.with(AdminProfile.this)
                                         .load(adminUser.getProfilePictureUrl())
-                                        .placeholder(R.drawable.ic_default_profile) // Default image
-                                        .error(R.drawable.ic_error_image) // Error image
+                                        .placeholder(R.drawable.ic_default_profile)
+                                        .error(R.drawable.ic_error_image)
                                         .into(profileImage);
                             } else {
                                 profileImage.setImageResource(R.drawable.ic_default_profile);

@@ -1,6 +1,7 @@
 package com.mobdeve.salonpas;
 
 public class Stylist {
+    private String firebaseKey;
     private String name;
     private String photo;
     private int yearsOfExperience;
@@ -32,4 +33,13 @@ public class Stylist {
 
     public String getServices() { return services; }
     public void setServices(String services) { this.services = services; }
+
+    public String getFirebaseKey() {
+        return firebaseKey;
+    }
+
+    public void setFirebaseKey(String firebaseKey) {
+        this.firebaseKey = firebaseKey;
+    }
+
 }

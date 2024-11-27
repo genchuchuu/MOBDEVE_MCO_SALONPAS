@@ -108,6 +108,22 @@
             app:layout_constraintStart_toEndOf="@+id/rating"
             app:layout_constraintTop_toBottomOf="@+id/experience" />
 
+        <Button
+            android:id="@+id/deleteStylistButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="156dp"
+            android:backgroundTint="#020887"
+            android:text="Delete Stylist"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.496"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/stylistServices"
+            app:layout_constraintVertical_bias="0.612"
+            android:onClick="onDeleteStylistClicked"/>
+
         <ImageView
             android:id="@+id/imageView3"
             android:layout_width="23dp"
@@ -117,6 +133,9 @@
             app:layout_constraintStart_toEndOf="@+id/stylistRating"
             app:layout_constraintTop_toBottomOf="@+id/experience"
             app:srcCompat="@drawable/baseline_star_rate_24" />
+
+
+
 
 
         <LinearLayout

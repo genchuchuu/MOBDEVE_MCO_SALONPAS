@@ -29,16 +29,13 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
         String currentUserId = mAuth.getCurrentUser().getUid();
         mDatabase = FirebaseDatabase.getInstance().getReference("Users").child(currentUserId);
 
-        // Initialize UI components
         initializeUI();
         loadUserData();
 
-        // Set up button actions
         editProfileButton.setOnClickListener(v -> {
             Intent intent = new Intent(ProfileActivity.this, EditProfileActivity.class);
             startActivity(intent);
@@ -70,19 +67,17 @@ public class ProfileActivity extends AppCompatActivity {
                 DataSnapshot snapshot = task.getResult();
                 User user = snapshot.getValue(User.class);
                 if (user != null) {
-                    // Populate fields
                     valueName.setText(user.getFirstName() + " " + user.getLastName());
                     valueBirthday.setText(user.getBirthdate() != null ? user.getBirthdate() : "Not provided");
                     valueGender.setText(user.getGender() != null ? user.getGender() : "Not provided");
                     valueContact.setText(user.getContact() != null ? user.getContact() : "Not provided");
                     valueEmail.setText(user.getEmail());
 
-                    // Handle profile picture
                     if (user.getProfilePictureUrl() != null && !user.getProfilePictureUrl().isEmpty()) {
                         Glide.with(this)
                                 .load(user.getProfilePictureUrl())
-                                .placeholder(R.drawable.ic_default_profile) // Default image
-                                .error(R.drawable.ic_error_image) // Error image
+                                .placeholder(R.drawable.ic_default_profile)
+                                .error(R.drawable.ic_error_image)
                                 .into(profileImage);
                     } else {
                         profileImage.setImageResource(R.drawable.ic_default_profile);
@@ -97,7 +92,6 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
 
-    // Navigation methods for other activities
     public void openAppointmentHistory(View view) {
         Intent intent = new Intent(ProfileActivity.this, AppointmentHistory.class);
         startActivity(intent);

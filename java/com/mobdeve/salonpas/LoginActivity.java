@@ -20,7 +20,6 @@ public class LoginActivity extends AppCompatActivity {
     private TextView createAccountLink;
     private FirebaseAuth mAuth;
 
-    // Hardcoded admin email
     private final String ADMIN_EMAIL = "admin1@salonpas.store.com";
 
     @Override
@@ -50,12 +49,9 @@ public class LoginActivity extends AppCompatActivity {
     private void loginUser(String email, String password) {
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                // Check if the logged-in email matches the admin email
                 if (email.equalsIgnoreCase(ADMIN_EMAIL)) {
-                    // Redirect to Admin Main Page
                     startActivity(new Intent(this, AdminMainPageActivity.class));
                 } else {
-                    // Redirect to User Main Page
                     startActivity(new Intent(this, UserMainPageActivity.class));
                 }
                 finish();

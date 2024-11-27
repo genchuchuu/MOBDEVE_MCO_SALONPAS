@@ -3,8 +3,11 @@ package com.mobdeve.salonpas;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -28,8 +31,11 @@ public class ManageServiceList extends AppCompatActivity implements ServiceAdapt
     private RecyclerView serviceRecyclerView;
     private ServiceAdapter serviceAdapter;
     private List<Service> serviceList;
+    private List<Service> allServices;
     private Button addServiceButton;
     private DatabaseReference servicesRef;
+    private EditText searchBar;
+    private ImageView searchIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +44,11 @@ public class ManageServiceList extends AppCompatActivity implements ServiceAdapt
 
         serviceRecyclerView = findViewById(R.id.ServiceListRecView);
         addServiceButton = findViewById(R.id.addServiceButton);
+        searchBar = findViewById(R.id.searchBar);
+        searchIcon = findViewById(R.id.searchIcon);
 
         serviceList = new ArrayList<>();
+        allServices = new ArrayList<>();
         servicesRef = FirebaseDatabase.getInstance().getReference("Services");
 
         serviceAdapter = new ServiceAdapter(serviceList, this);
@@ -49,6 +58,8 @@ public class ManageServiceList extends AppCompatActivity implements ServiceAdapt
         loadServicesFromFirebase();
 
         addServiceButton.setOnClickListener(v -> showAddServiceDialog());
+
+        setupSearch();
     }
 
     private void loadServicesFromFirebase() {
@@ -56,10 +67,14 @@ public class ManageServiceList extends AppCompatActivity implements ServiceAdapt
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 serviceList.clear();
+                allServices.clear();
+
                 for (DataSnapshot serviceSnapshot : dataSnapshot.getChildren()) {
                     Service service = serviceSnapshot.getValue(Service.class);
                     if (service != null) {
+                        service.setId(serviceSnapshot.getKey());
                         serviceList.add(service);
+                        allServices.add(service);
                     }
                 }
                 serviceAdapter.notifyDataSetChanged();
@@ -95,14 +110,23 @@ public class ManageServiceList extends AppCompatActivity implements ServiceAdapt
         durationInput.setText(service.getDuration());
         priceInput.setText(service.getPrice());
 
-        Glide.with(this).load(service.getImageUrl()).into(serviceImage);
+        Glide.with(this)
+                .load(service.getImageUrl())
+                .placeholder(getDefaultServiceImage(service.getName()))
+                .into(serviceImage);
+
 
         builder.setPositiveButton("Save", (dialog, which) -> {
             service.setName(nameInput.getText().toString());
             service.setDescription(descInput.getText().toString());
             service.setDuration(durationInput.getText().toString());
             service.setPrice(priceInput.getText().toString());
-            updateServiceInFirebase(service);
+
+            if (service.getId() != null) {
+                updateServiceInFirebase(service);
+            } else {
+                Toast.makeText(this, "Service ID is missing. Please try again.", Toast.LENGTH_SHORT).show();
+            }
         });
 
         builder.setNeutralButton("Delete", (dialog, which) -> showDeleteConfirmationDialog(service));
@@ -112,29 +136,53 @@ public class ManageServiceList extends AppCompatActivity implements ServiceAdapt
         builder.show();
     }
 
+    private int getDefaultServiceImage(String serviceName) {
+        switch (serviceName.toLowerCase()) {
+            case "hair treatment":
+                return R.drawable.hairtreatment;
+            case "hairstyle":
+                return R.drawable.hairstyle;
+            case "haircut":
+                return R.drawable.haircut;
+            case "hair color":
+                return R.drawable.haircolor;
+            case "rebond":
+                return R.drawable.rebond;
+            default:
+                return R.drawable.placeholder; // Fallback image
+        }
+    }
+
+
     private void updateServiceInFirebase(Service service) {
-        servicesRef.child(service.getName()).setValue(service)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Service updated successfully.", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to update service: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        String serviceId = service.getId();
+
+        if (serviceId != null && !serviceId.isEmpty()) {
+            servicesRef.child(serviceId).setValue(service)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Service updated successfully.", Toast.LENGTH_SHORT).show();
+                        loadServicesFromFirebase(); // Reload services to reflect changes
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to update service: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            Toast.makeText(this, "Service ID is invalid. Update failed.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showDeleteConfirmationDialog(Service service) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Service")
                 .setMessage("Are you sure you want to delete this service?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    deleteServiceFromFirebase(service);
-                })
+                .setPositiveButton("Yes", (dialog, which) -> deleteServiceFromFirebase(service))
                 .setNegativeButton("No", null)
                 .show();
     }
 
     private void deleteServiceFromFirebase(Service service) {
-        servicesRef.child(service.getName()).removeValue()
+        String serviceId = service.getId();
+        servicesRef.child(serviceId).removeValue()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Service deleted successfully.", Toast.LENGTH_SHORT).show();
                 })
@@ -161,7 +209,7 @@ public class ManageServiceList extends AppCompatActivity implements ServiceAdapt
                     descInput.getText().toString(),
                     durationInput.getText().toString(),
                     priceInput.getText().toString(),
-                    null // Default no image URL
+                    null
             );
             addServiceToFirebase(newService);
         });
@@ -172,43 +220,50 @@ public class ManageServiceList extends AppCompatActivity implements ServiceAdapt
     }
 
     private void addServiceToFirebase(Service service) {
-        servicesRef.child(service.getName()).setValue(service)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Service added successfully.", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to add service: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        String serviceId = servicesRef.push().getKey();
+        if (serviceId != null) {
+            service.setId(serviceId);
+            servicesRef.child(serviceId).setValue(service)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Service added successfully.", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Failed to add service: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        }
     }
 
-    public void openAdminMainPage(View view) {
-        Intent intent = new Intent(ManageServiceList.this, AdminMainPageActivity.class);
-        startActivity(intent);
+    private void setupSearch() {
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence query, int start, int before, int count) {
+                filterServices(query.toString().trim());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {}
+        });
+
+        searchIcon.setOnClickListener(v -> {
+            String query = searchBar.getText().toString().trim();
+            filterServices(query);
+        });
     }
 
-    public void manageService(View view) {
-        Intent intent = new Intent(ManageServiceList.this, ManageServiceList.class);
-        startActivity(intent);
-    }
-
-    public void manageStylist(View view) {
-        Intent intent = new Intent(ManageServiceList.this, ManageStylist.class);
-        startActivity(intent);
-    }
-
-    public void manageAppointment(View view) {
-        Intent intent = new Intent(ManageServiceList.this, ManageAppointment.class);
-        startActivity(intent);
-    }
-
-    public void openAdminNotification(View view) {
-        Intent intent = new Intent(ManageServiceList.this, AdminNotificationActivity.class);
-        startActivity(intent);
-    }
-
-    public void openAdminProfile(View view) {
-        Intent intent = new Intent(ManageServiceList.this, AdminProfile.class);
-        startActivity(intent);
+    private void filterServices(String query) {
+        serviceList.clear();
+        if (query.isEmpty()) {
+            serviceList.addAll(allServices);
+        } else {
+            for (Service service : allServices) {
+                if (service.getName().toLowerCase().contains(query.toLowerCase())) {
+                    serviceList.add(service);
+                }
+            }
+        }
+        serviceAdapter.notifyDataSetChanged();
     }
 }
-

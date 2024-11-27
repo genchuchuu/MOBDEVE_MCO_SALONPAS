@@ -22,7 +22,6 @@ public class MainActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.loginButton);
         signupButton = findViewById(R.id.signupButton);
 
-        // Test Firebase connection
         testFirebaseDatabaseConnection();
 
         loginButton.setOnClickListener(view -> {

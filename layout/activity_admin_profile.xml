@@ -49,100 +49,23 @@
                         tools:srcCompat="@tools:sample/avatars" />
 
                     <TextView
-                        android:id="@+id/titleProfile"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="32dp"
-                        android:text="My Profile"
-                        android:textAlignment="center"
-                        android:textColor="#020887"
-                        android:textSize="32sp"
-                        android:textStyle="bold|italic"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/profileImage" />
-
-                    <TextView
-                        android:id="@+id/labelName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="24dp"
-                        android:text="Name:"
-                        android:textColor="#020887"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/titleProfile" />
-
-                    <TextView
-                        android:id="@+id/valueName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Kang Seulgi"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/labelName" />
-
-                    <TextView
-                        android:id="@+id/labelBirthday"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:text="Birthday:"
-                        android:textColor="#020887"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/valueName" />
-
-                    <TextView
-                        android:id="@+id/valueBirthday"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="01/01/1991"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/labelBirthday" />
-
-                    <TextView
-                        android:id="@+id/labelGender"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:text="Gender:"
-                        android:textColor="#020887"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/valueBirthday" />
-
-                    <TextView
-                        android:id="@+id/valueGender"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Female"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/labelGender" />
-
-                    <TextView
                         android:id="@+id/labelContact"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="24dp"
                         android:text="Contact:"
                         android:textColor="#020887"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/valueGender" />
+                        app:layout_constraintTop_toBottomOf="@id/profileImage" />
 
                     <TextView
                         android:id="@+id/valueContact"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="1234567890"
+                        android:text="N/A"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/labelContact" />
 
@@ -163,7 +86,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="k.seulgi@gmail.com"
+                        android:text="N/A"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/labelEmail" />
 
@@ -206,6 +129,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:padding="16dp"
         android:elevation="8dp"
+        android:radius="50dp"
         android:clipToOutline="true"
         android:weightSum="6">
 
@@ -215,19 +139,19 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:onClick="openAdminMainPage">
+            android:onClick="openUserMainPage">
             <ImageView
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/home"
                 app:tint="@color/white"
-                android:contentDescription="Home" />
+                android:contentDescription="Home"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Home"
                 android:textColor="@color/white"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -236,19 +160,19 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:onClick="manageService">
+            android:onClick="openServicesList">
             <ImageView
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/services"
                 app:tint="@color/white"
-                android:contentDescription="Services" />
+                android:contentDescription="Services"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Services"
                 android:textColor="@color/white"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -257,7 +181,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:onClick="manageStylist">
+            android:onClick="openStylistList" >
             <ImageView
                 android:layout_width="32dp"
                 android:layout_height="32dp"
@@ -269,7 +193,8 @@
                 android:layout_height="wrap_content"
                 android:text="Stylists"
                 android:textColor="@color/white"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
+
         </LinearLayout>
 
         <LinearLayout
@@ -278,19 +203,19 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:onClick="manageAppointment">
+            android:onClick="openReservationPage" >
             <ImageView
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/reserve"
                 app:tint="@color/white"
-                android:contentDescription="Reserve" />
+                android:contentDescription="Reserve"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Reserve"
                 android:textColor="@color/white"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -299,19 +224,19 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:onClick="openAdminNotification">
+            android:onClick="openNotificationPage" >
             <ImageView
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/notifications"
                 app:tint="@color/white"
-                android:contentDescription="Notifications" />
+                android:contentDescription="Notifications"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Notification"
                 android:textColor="@color/white"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -320,19 +245,19 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center"
-            android:onClick="openAdminProfile">
+            android:onClick="openProfilePage">
             <ImageView
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/user"
                 app:tint="@color/white"
-                android:contentDescription="Account" />
+                android:contentDescription="Account"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Account"
                 android:textColor="@color/white"
-                android:textSize="12sp" />
+                android:textSize="12sp"/>
         </LinearLayout>
 
     </LinearLayout>

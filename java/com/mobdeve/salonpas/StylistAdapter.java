@@ -35,10 +35,7 @@ public class StylistAdapter extends RecyclerView.Adapter<StylistAdapter.StylistV
         Stylist stylist = stylistList.get(position);
         holder.stylistName.setText(stylist.getName());
         holder.stylistServices.setText(stylist.getServices());
-        Glide.with(holder.itemView.getContext())
-                .load(stylist.getPhoto())
-                .placeholder(R.drawable.placeholder) // Placeholder image
-                .into(holder.stylistPhoto);
+        Glide.with(holder.itemView.getContext());
 
         holder.itemView.setOnClickListener(v -> listener.onStylistClick(stylist));
     }
@@ -50,13 +47,13 @@ public class StylistAdapter extends RecyclerView.Adapter<StylistAdapter.StylistV
 
     static class StylistViewHolder extends RecyclerView.ViewHolder {
         TextView stylistName, stylistServices;
-        ImageView stylistPhoto;
+
 
         public StylistViewHolder(@NonNull View itemView) {
             super(itemView);
             stylistName = itemView.findViewById(R.id.stylistName);
             stylistServices = itemView.findViewById(R.id.stylistServices);
-            stylistPhoto = itemView.findViewById(R.id.stylistPhoto);
+
         }
     }
 

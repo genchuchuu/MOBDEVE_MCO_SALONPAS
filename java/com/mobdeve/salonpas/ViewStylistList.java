@@ -2,8 +2,12 @@ package com.mobdeve.salonpas;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,6 +29,9 @@ public class ViewStylistList extends AppCompatActivity {
     private RecyclerView recyclerView;
     private StylistAdapter adapter;
     private List<Stylist> stylistList;
+    private List<Stylist> allStylists;
+    private EditText searchBar;
+    private ImageView searchIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +39,12 @@ public class ViewStylistList extends AppCompatActivity {
         setContentView(R.layout.activity_view_stylist);
 
         recyclerView = findViewById(R.id.recyclerView);
+        searchBar = findViewById(R.id.searchBar);
+        searchIcon = findViewById(R.id.searchIcon);
+
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         stylistList = new ArrayList<>();
+        allStylists = new ArrayList<>();
         adapter = new StylistAdapter(stylistList, stylist -> {
             Intent intent = new Intent(this, StylistProfile.class);
             intent.putExtra("stylist_name", stylist.getName());
@@ -46,6 +57,7 @@ public class ViewStylistList extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         loadStylistList();
+        setupSearch();
     }
 
     private void loadStylistList() {
@@ -54,10 +66,12 @@ public class ViewStylistList extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 stylistList.clear();
+                allStylists.clear();
                 for (DataSnapshot stylistSnapshot : snapshot.getChildren()) {
                     Stylist stylist = stylistSnapshot.getValue(Stylist.class);
                     if (stylist != null) {
                         stylistList.add(stylist);
+                        allStylists.add(stylist);
                         Log.d("ViewStylistList", "Loaded Stylist: " + stylist.getName());
                     } else {
                         Log.e("ViewStylistList", "Null stylist object found in database.");
@@ -72,6 +86,40 @@ public class ViewStylistList extends AppCompatActivity {
                 Log.e("ViewStylistList", "Database error: " + error.getMessage());
             }
         });
+    }
+
+    private void setupSearch() {
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterStylists(s.toString().trim());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        searchIcon.setOnClickListener(v -> {
+            String query = searchBar.getText().toString().trim();
+            filterStylists(query);
+        });
+    }
+
+    private void filterStylists(String query) {
+        stylistList.clear();
+        if (query.isEmpty()) {
+            stylistList.addAll(allStylists);
+        } else {
+            for (Stylist stylist : allStylists) {
+                if (stylist.getName().toLowerCase().contains(query.toLowerCase())) {
+                    stylistList.add(stylist);
+                }
+            }
+        }
+        adapter.notifyDataSetChanged();
     }
 
     public void openUserMainPage(View view) {

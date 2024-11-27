@@ -1,5 +1,6 @@
 package com.mobdeve.salonpas;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -13,6 +14,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
@@ -55,14 +58,16 @@ public class EditProfileActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference("Users").child(mAuth.getCurrentUser().getUid());
         mStorage = FirebaseStorage.getInstance().getReference("ProfilePictures");
 
-        // Load user data
         loadUserData();
 
-        // Set up event listeners
         profileImage.setOnClickListener(v -> openFileChooser());
         saveProfileButton.setOnClickListener(v -> saveProfile());
         cancelProfileButton.setOnClickListener(v -> finish());
         editBirthday.setOnClickListener(v -> openDatePicker());
+
+        Button deleteProfileButton = findViewById(R.id.deleteProfileButton);
+        deleteProfileButton.setOnClickListener(v -> deleteProfile());
+
     }
 
     private void openFileChooser() {
@@ -92,11 +97,8 @@ public class EditProfileActivity extends AppCompatActivity {
                     editBirthday.setText(user.getBirthdate() != null ? user.getBirthdate() : "");
                     editContact.setText(user.getContact() != null ? user.getContact() : "");
 
-                    Glide.with(this)
-                            .load(user.getProfilePictureUrl())
-                            .placeholder(R.drawable.ic_default_profile)
-                            .error(R.drawable.ic_error_image)
-                            .into(profileImage);
+                    // Always use the default profile image
+                    profileImage.setImageResource(R.drawable.ic_default_profile);
                 } else {
                     showToast("User data is missing.");
                 }
@@ -105,6 +107,7 @@ public class EditProfileActivity extends AppCompatActivity {
             }
         }).addOnFailureListener(e -> showToast("Error: " + e.getMessage()));
     }
+
 
     private void saveProfile() {
         String firstName = editFirstName.getText().toString().trim();
@@ -128,43 +131,16 @@ public class EditProfileActivity extends AppCompatActivity {
         updates.put("contact", contact);
 
         mDatabase.updateChildren(updates).addOnCompleteListener(task -> {
+            progressDialog.dismiss();
             if (task.isSuccessful()) {
-                if (imageUri != null) {
-                    uploadProfilePicture(progressDialog);
-                } else {
-                    progressDialog.dismiss();
-                    showToast("Profile updated successfully!");
-                    finish();
-                }
+                showToast("Profile updated successfully!");
+                finish();
             } else {
-                progressDialog.dismiss();
                 showToast("Failed to update profile.");
             }
         });
     }
 
-    private void uploadProfilePicture(ProgressDialog progressDialog) {
-        StorageReference fileReference = mStorage.child(mAuth.getCurrentUser().getUid() + ".jpg");
-
-        fileReference.putFile(imageUri).addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
-                    mDatabase.child("profilePictureUrl").setValue(uri.toString()).addOnCompleteListener(updateTask -> {
-                        progressDialog.dismiss();
-                        if (updateTask.isSuccessful()) {
-                            showToast("Profile updated successfully!");
-                            finish();
-                        } else {
-                            showToast("Failed to update profile picture URL.");
-                        }
-                    });
-                });
-            } else {
-                progressDialog.dismiss();
-                showToast("Failed to upload profile picture.");
-            }
-        });
-    }
 
     private void openDatePicker() {
         Calendar calendar = Calendar.getInstance();
@@ -182,4 +158,64 @@ public class EditProfileActivity extends AppCompatActivity {
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
+
+    private void deleteProfile() {
+        new AlertDialog.Builder(this)
+                .setMessage("Are you sure you want to delete your profile?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", (dialog, id) -> {
+                    ProgressDialog progressDialog = new ProgressDialog(this);
+                    progressDialog.setMessage("Deleting profile...");
+                    progressDialog.show();
+
+                    deleteAppointmentsAndReservations(mAuth.getCurrentUser().getUid(), new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                mDatabase.removeValue().addOnCompleteListener(databaseTask -> {
+                                    if (databaseTask.isSuccessful()) {
+                                        mAuth.getCurrentUser().delete().addOnCompleteListener(authTask -> {
+                                            if (authTask.isSuccessful()) {
+                                                showToast("Profile deleted successfully!");
+                                                redirectToLogin();
+                                            } else {
+                                                showToast("Failed to delete user from authentication.");
+                                            }
+                                        });
+                                    } else {
+                                        progressDialog.dismiss();
+                                        showToast("Failed to delete profile data.");
+                                    }
+                                });
+                            } else {
+                                progressDialog.dismiss();
+                                showToast("Failed to delete appointments and reservations.");
+                            }
+                        }
+                    });
+                })
+                .setNegativeButton("No", (dialog, id) -> dialog.dismiss())
+                .show();
+    }
+
+    // Helper method to delete appointments/reservations
+    private void deleteAppointmentsAndReservations(String userId, OnCompleteListener<Void> listener) {
+        mDatabase.child("appointments").child(userId).removeValue()
+                .addOnCompleteListener(listener);
+    }
+
+
+    private void redirectToLogin() {
+        FirebaseAuth.getInstance().signOut();
+
+        Intent intent = new Intent(EditProfileActivity.this, LoginActivity.class);
+
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        startActivity(intent);
+
+        finish();
+    }
+
+
 }

@@ -1,8 +1,6 @@
 package com.mobdeve.salonpas;
 
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.GridLayout;
@@ -41,13 +39,11 @@ public class UserMainPageActivity extends AppCompatActivity {
         greetingTextView = findViewById(R.id.greeting);
         faqsTextView = findViewById(R.id.faqs);
         servicesGrid = findViewById(R.id.servicesGrid);
-        searchBar = findViewById(R.id.searchBar);
-        searchIcon = findViewById(R.id.searchIcon);
 
         loadGreeting();
-        loadServices(); // Load only services
-        setupSearch();  // Setup the search functionality
+        loadServices();
         setFAQsContent();
+
     }
 
     private void loadGreeting() {
@@ -67,7 +63,7 @@ public class UserMainPageActivity extends AppCompatActivity {
                         allServices.add(service);
                     }
                 }
-                displayServices(allServices); // Initially display all services
+                displayServices(allServices);
             }
 
             @Override
@@ -75,38 +71,6 @@ public class UserMainPageActivity extends AppCompatActivity {
                 Toast.makeText(UserMainPageActivity.this, "Failed to load services: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void setupSearch() {
-        searchBar.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
-
-            @Override
-            public void onTextChanged(CharSequence query, int i, int i1, int i2) {
-                filterServices(query.toString().trim());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {}
-        });
-
-        searchIcon.setOnClickListener(v -> {
-            String query = searchBar.getText().toString().trim();
-            filterServices(query);
-        });
-    }
-
-    private void filterServices(String query) {
-        List<Service> filteredServices = new ArrayList<>();
-
-        for (Service service : allServices) {
-            if (service.getName().toLowerCase().contains(query.toLowerCase())) {
-                filteredServices.add(service);
-            }
-        }
-
-        displayServices(filteredServices); // Display only filtered results
     }
 
     private void displayServices(List<Service> services) {
@@ -119,16 +83,41 @@ public class UserMainPageActivity extends AppCompatActivity {
 
     private void addServiceToGrid(Service service) {
         View serviceItem = getLayoutInflater().inflate(R.layout.service_items, servicesGrid, false);
-
         TextView serviceName = serviceItem.findViewById(R.id.serviceName);
+        TextView serviceDesc = serviceItem.findViewById(R.id.serviceDesc);
+        TextView serviceDuration = serviceItem.findViewById(R.id.serviceDuration);
+        TextView servicePrice = serviceItem.findViewById(R.id.servicePrice);
         ImageView serviceImage = serviceItem.findViewById(R.id.serviceImg);
 
         serviceName.setText(service.getName());
+        serviceDesc.setText(service.getDescription());
+        serviceDuration.setText(service.getDuration());
+        servicePrice.setText(service.getPrice());
 
         if (service.getImageUrl() != null && !service.getImageUrl().isEmpty()) {
             Glide.with(this).load(service.getImageUrl()).into(serviceImage);
         } else {
-            serviceImage.setImageResource(R.drawable.placeholder);
+            // Default image logic
+            switch (service.getName().toLowerCase()) {
+                case "hair treatment":
+                    serviceImage.setImageResource(R.drawable.hairtreatment);
+                    break;
+                case "hair styling":
+                    serviceImage.setImageResource(R.drawable.hairstyle);
+                    break;
+                case "haircut":
+                    serviceImage.setImageResource(R.drawable.haircut);
+                    break;
+                case "hair color":
+                    serviceImage.setImageResource(R.drawable.haircolor);
+                    break;
+                case "rebond":
+                    serviceImage.setImageResource(R.drawable.rebond);
+                    break;
+                default:
+                    serviceImage.setImageResource(R.drawable.placeholder);
+                    break;
+            }
         }
 
         serviceItem.setOnClickListener(v -> {
@@ -144,22 +133,22 @@ public class UserMainPageActivity extends AppCompatActivity {
         servicesGrid.addView(serviceItem);
     }
 
+
     private void setFAQsContent() {
-        String faqText = "<b>1. What is the Salonpas Hair Salon app?</b><br/>" +
-                "The Salonpas app is a salon appointment scheduling platform that allows clients to register, book appointments, view services and stylists, and manage their salon experience.<br/><br/>" +
-                "<b>2. What services are available through the app?</b><br/>" +
-                "Clients can book haircuts, coloring, styling, and other hair treatments.<br/><br/>" +
-                "<b>3. How can I book an appointment?</b><br/>" +
-                "Register, select a service, choose a stylist, and book a time slot.<br/><br/>" +
-                "<b>4. Can I choose my stylist?</b><br/>" +
-                "Yes, you can view available stylists and choose based on their profiles.<br/><br/>" +
-                "<b>5. What happens if I can’t make it to my appointment?</b><br/>" +
+        String faqText = "1. What is the Salonpas Hair Salon app?" +
+                "The Salonpas app is a salon appointment scheduling platform that allows clients to register, book appointments, view services and stylists, and manage their salon experience." +
+                "2. What services are available through the app?" +
+                "Clients can book haircuts, coloring, styling, and other hair treatments." +
+                "3. How can I book an appointment?" +
+                "Register, select a service, choose a stylist, and book a time slot." +
+                "4. Can I choose my stylist?" +
+                "Yes, you can view available stylists and choose based on their profiles." +
+                "5. What happens if I can’t make it to my appointment?" +
                 "You can reschedule or cancel your appointment through the app.";
 
         faqsTextView.setText(faqText);
     }
 
-// Navigation methods
     public void openUserMainPage(View view) {
         startActivity(new Intent(UserMainPageActivity.this, UserMainPageActivity.class));
     }

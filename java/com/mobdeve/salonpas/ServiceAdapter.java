@@ -64,15 +64,36 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
             serviceDuration.setText(service.getDuration());
             servicePrice.setText(service.getPrice());
 
-            // Load image from URL using Glide
+            // Check if the image URL is available
             if (service.getImageUrl() != null && !service.getImageUrl().isEmpty()) {
                 Glide.with(serviceImage.getContext())
                         .load(service.getImageUrl())
-                        .apply(new RequestOptions().placeholder(R.drawable.placeholder)) // Placeholder image
+                        .placeholder(R.drawable.placeholder) // Fallback placeholder during loading
                         .into(serviceImage);
             } else {
-                serviceImage.setImageResource(R.drawable.placeholder); // Default placeholder
+                // Assign default images based on service type
+                switch (service.getName().toLowerCase()) {
+                    case "hair treatment":
+                        serviceImage.setImageResource(R.drawable.hairtreatment);
+                        break;
+                    case "haircut":
+                        serviceImage.setImageResource(R.drawable.haircut);
+                        break;
+                    case "hair color":
+                        serviceImage.setImageResource(R.drawable.haircolor);
+                        break;
+                    case "hair styling":
+                        serviceImage.setImageResource(R.drawable.hairstyle);
+                        break;
+                    case "rebond":
+                        serviceImage.setImageResource(R.drawable.rebond);
+                        break;
+                    default:
+                        serviceImage.setImageResource(R.drawable.placeholder); // General fallback
+                        break;
+                }
             }
         }
+
     }
 }

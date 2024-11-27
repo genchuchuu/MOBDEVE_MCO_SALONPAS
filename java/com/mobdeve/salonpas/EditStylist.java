@@ -9,12 +9,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class EditStylist extends AppCompatActivity {
     private TextView nameTextView;
@@ -23,21 +24,27 @@ public class EditStylist extends AppCompatActivity {
     private TextView servicesTextView;
     private ImageView photoImageView;
 
+    private String firebaseKey; // Firebase key
     private String name;
     private double rating;
     private int years;
     private String services;
 
+    private DatabaseReference stylistRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_stylist_profile);
+        setContentView(R.layout.activity_edit_stylist);
 
+        firebaseKey = getIntent().getStringExtra("stylist_key");
         name = getIntent().getStringExtra("stylist_name");
         String photo = getIntent().getStringExtra("stylist_photo");
         years = getIntent().getIntExtra("stylist_experience", 0);
         rating = getIntent().getDoubleExtra("stylist_rating", 0);
         services = getIntent().getStringExtra("stylist_services");
+
+        stylistRef = FirebaseDatabase.getInstance().getReference("Stylists").child(firebaseKey);
 
         nameTextView = findViewById(R.id.stylistName);
         photoImageView = findViewById(R.id.stylistImage);
@@ -48,12 +55,12 @@ public class EditStylist extends AppCompatActivity {
         updateViews();
 
         int photoResId = getResources().getIdentifier(photo, "drawable", getPackageName());
-            photoImageView.setImageResource(photoResId);
+        photoImageView.setImageResource(photoResId);
 
-        setEditableOnClick(nameTextView, true);
-        setEditableOnClick(ratingTextView, true);
-        setEditableOnClick(experienceTextView, true);
-        setEditableOnClick(servicesTextView, true);
+        setEditableOnClick(nameTextView, "name");
+        setEditableOnClick(ratingTextView, "rating");
+        setEditableOnClick(experienceTextView, "yearsOfExperience");
+        setEditableOnClick(servicesTextView, "services");
     }
 
     private void updateViews() {
@@ -63,18 +70,22 @@ public class EditStylist extends AppCompatActivity {
         servicesTextView.setText(services);
     }
 
-    private void setEditableOnClick(TextView textView, boolean isEditable) {
+    private void setEditableOnClick(TextView textView, String fieldKey) {
         textView.setOnClickListener(v -> {
             EditText editText = new EditText(EditStylist.this);
             editText.setText(textView.getText().toString());
-            editText.setInputType(InputType.TYPE_CLASS_TEXT);
+
+            if (fieldKey.equals("rating")) {
+                editText.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            } else if (fieldKey.equals("yearsOfExperience")) {
+                editText.setInputType(InputType.TYPE_CLASS_NUMBER);
+            } else {
+                editText.setInputType(InputType.TYPE_CLASS_TEXT);
+            }
             editText.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
             ViewGroup parent = (ViewGroup) textView.getParent();
             if (parent != null) {
-                LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-                editText.setLayoutParams(params);
-
                 int index = parent.indexOfChild(textView);
                 parent.addView(editText, index);
                 textView.setVisibility(View.GONE);
@@ -82,25 +93,63 @@ public class EditStylist extends AppCompatActivity {
                 editText.requestFocus();
                 editText.setOnFocusChangeListener((v1, hasFocus) -> {
                     if (!hasFocus) {
-                        if (isEditable) {
-                            if (textView == nameTextView) {
-                                name = editText.getText().toString();
-                            } else if (textView == servicesTextView) {
-                                services = editText.getText().toString();
-                            } else if (textView == ratingTextView) {
-                                rating = Double.parseDouble(editText.getText().toString());
-                            } else if (textView == experienceTextView) {
-                                years = Integer.parseInt(editText.getText().toString());
-                            }
-                        }
+                        String newValue = editText.getText().toString().trim();
+                        Object parsedValue = null;
 
-                        updateViews();
-                        parent.removeView(editText);
-                        textView.setVisibility(View.VISIBLE);
+                        try {
+                            if (fieldKey.equals("name")) {
+                                name = newValue;
+                                parsedValue = newValue;
+                            } else if (fieldKey.equals("services")) {
+                                services = newValue;
+                                parsedValue = newValue;
+                            } else if (fieldKey.equals("rating")) {
+                                parsedValue = Double.parseDouble(newValue);
+                                rating = (double) parsedValue;
+                            } else if (fieldKey.equals("yearsOfExperience")) {
+                                parsedValue = Integer.parseInt(newValue);
+                                years = (int) parsedValue;
+                            }
+
+                            stylistRef.child(fieldKey).setValue(parsedValue)
+                                    .addOnSuccessListener(aVoid -> {
+                                        textView.setText(newValue); // Update TextView with the new value
+                                        parent.removeView(editText);
+                                        textView.setVisibility(View.VISIBLE);
+                                        showValueSavedDialog(); // Show success dialog
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        parent.removeView(editText);
+                                        textView.setVisibility(View.VISIBLE);
+                                        Toast.makeText(EditStylist.this, "Update failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    });
+                        } catch (NumberFormatException e) {
+                            Toast.makeText(EditStylist.this, "Invalid input for " + fieldKey + ". Please enter a valid value.", Toast.LENGTH_LONG).show();
+                            parent.removeView(editText);
+                            textView.setVisibility(View.VISIBLE);
+                        }
                     }
                 });
             }
         });
+    }
+
+
+
+    private void showValueSavedDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Success")
+                .setMessage("Value saved successfully!")
+                .setPositiveButton("OK", null)
+                .setCancelable(false)
+                .show();
+    }
+
+
+    private void restartEditStylist() {
+        Intent intent = getIntent();
+        finish();
+        startActivity(intent);
     }
 
     public void openAdminMainPage(View view) {
@@ -122,4 +171,25 @@ public class EditStylist extends AppCompatActivity {
         Intent intent = new Intent(EditStylist.this, ManageAppointment.class);
         startActivity(intent);
     }
+
+    public void onDeleteStylistClicked(View view) {
+        new AlertDialog.Builder(this)
+                .setTitle("Confirm Deletion")
+                .setMessage("Are you sure you want to delete this stylist?")
+                .setPositiveButton("Yes", (dialog, which) -> deleteStylist())
+                .setNegativeButton("No", null)
+                .show();
+    }
+
+    private void deleteStylist() {
+        stylistRef.removeValue().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(EditStylist.this, "Stylist deleted successfully!", Toast.LENGTH_SHORT).show();
+                finish();
+            } else {
+                Toast.makeText(EditStylist.this, "Failed to delete stylist. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 }

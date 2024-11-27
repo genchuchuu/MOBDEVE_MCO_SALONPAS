@@ -8,7 +8,6 @@
     android:background="@color/mbg"
     tools:context=".ManageAppointment">
 
-    <!-- Title TextView -->
     <TextView
         android:id="@+id/appointmentHistory"
         android:layout_width="wrap_content"
@@ -23,7 +22,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- RecyclerView for Dynamic Appointment List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/appointmentRecyclerView"
         android:layout_width="0dp"
@@ -37,7 +35,6 @@
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         tools:listitem="@layout/appointment_item" />
 
-    <!-- Bottom Navigation -->
 
     <LinearLayout
         android:id="@+id/bottom_navigation"

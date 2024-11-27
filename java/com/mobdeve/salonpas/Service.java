@@ -1,6 +1,7 @@
 package com.mobdeve.salonpas;
 
 public class Service {
+    private String id;
     private String Name;
     private String Description;
     private String Duration;
@@ -12,6 +13,7 @@ public class Service {
     }
 
     public Service(String Name, String Description, String Duration, String Price, String ImageUrl) {
+        this.id = "";
         this.Name = Name;
         this.Description = Description;
         this.Duration = Duration;
@@ -19,12 +21,14 @@ public class Service {
         this.ImageUrl = ImageUrl;
     }
 
+    public String getId() { return id; }
     public String getName() { return Name; }
     public String getDescription() { return Description; }
     public String getDuration() { return Duration; }
     public String getPrice() { return Price; }
     public String getImageUrl() { return ImageUrl; }
 
+    public void setId(String id) { this.id = id; }
     public void setName(String name) { Name = name; }
     public void setDescription(String description) { Description = description; }
     public void setDuration(String duration) { Duration = duration; }

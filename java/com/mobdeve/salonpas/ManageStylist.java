@@ -30,7 +30,7 @@ public class ManageStylist extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage_stylist);
 
-        recyclerView = findViewById(R.id.recyclerView); // Ensure RecyclerView ID matches XML
+        recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         stylistList = new ArrayList<>();
 
@@ -50,6 +50,7 @@ public class ManageStylist extends AppCompatActivity {
                     Stylist stylist = stylistSnapshot.getValue(Stylist.class);
                     if (stylist != null) {
                         stylistList.add(stylist);
+                        stylist.setFirebaseKey(stylistSnapshot.getKey());
                     }
                 }
                 adapter.notifyDataSetChanged();
@@ -62,8 +63,10 @@ public class ManageStylist extends AppCompatActivity {
         });
     }
 
+
     private void openStylistProfile(Stylist stylist) {
         Intent intent = new Intent(this, EditStylist.class);
+        intent.putExtra("stylist_key", stylist.getFirebaseKey());
         intent.putExtra("stylist_name", stylist.getName());
         intent.putExtra("stylist_photo", stylist.getPhoto());
         intent.putExtra("stylist_experience", stylist.getYearsOfExperience());
@@ -71,6 +74,7 @@ public class ManageStylist extends AppCompatActivity {
         intent.putExtra("stylist_services", stylist.getServices());
         startActivity(intent);
     }
+
 
     public void openAddStylist(View view) {
         Intent intent = new Intent(ManageStylist.this, AddStylist.class);

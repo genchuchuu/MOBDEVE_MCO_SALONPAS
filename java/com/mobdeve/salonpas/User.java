@@ -9,10 +9,8 @@ public class User {
     private String contact;
     private String profilePictureUrl; // Optional field
 
-    // Default constructor (required for Firebase deserialization)
     public User() {}
 
-    // Constructor for new users (with profilePictureUrl set to null by default)
     public User(String firstName, String lastName, String email, String birthdate, String gender, String contact) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -20,10 +18,9 @@ public class User {
         this.birthdate = birthdate;
         this.gender = gender;
         this.contact = contact;
-        this.profilePictureUrl = null; // Default to null
+        this.profilePictureUrl = null;
     }
 
-    // Constructor with profilePictureUrl
     public User(String firstName, String lastName, String email, String birthdate, String gender, String contact, String profilePictureUrl) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -34,7 +31,6 @@ public class User {
         this.profilePictureUrl = profilePictureUrl;
     }
 
-    // Getters and Setters
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
